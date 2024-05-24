@@ -211,7 +211,7 @@
             <div class="div-tipo">
                 <label for="tipo">Tipo:</label>
                 Ciudadano
-                <input type="radio" name="tipo" id="ciuadadano" value="ciudadano" onclick="VerificarPersona()"> 
+                <input type="radio" name="tipo" id="ciudadano" value="ciudadano" onclick="VerificarPersona()"> 
                 Extranjero
                 <input type="radio" name="tipo" id="extranjero" value="extranjero" onclick="VerificarPersona()">
             </div>
@@ -311,12 +311,12 @@
             <div class="miTabla" id="laTabla">
                 <table border="1" id="tabla" onclick="editarPersona()">
                     <tr id="encabezado">
-                        <th><a href="#" onclick="ordenarTabla(this)" id="0">ID</a></th>
-                        <th><a href="#" onclick="ordenarTabla(this)" id="1">Nombre</a></th>
-                        <th><a href="#" onclick="ordenarTabla(this)" id="2">Apellido</a></th>
-                        <th><a href="#" onclick="ordenarTabla(this)" id="3">Fecha de Nacimiento</a></th>
-                        <th><a href="#" onclick="ordenarTabla(this)" id="4">Dni</a></th>
-                        <th><a href="#" onclick="ordenarTabla(this)" id="5">Pais origen</a></th>
+                        <th><a href="#" onclick="ordenarTabla(this,0)" id="numero">ID</a></th>
+                        <th><a href="#" onclick="ordenarTabla(this,1)" id="texto">Nombre</a></th>
+                        <th><a href="#" onclick="ordenarTabla(this,2)" id="texto">Apellido</a></th>
+                        <th><a href="#" onclick="ordenarTabla(this,3)" id="fecha">Fecha de Nacimiento</a></th>
+                        <th><a href="#" onclick="ordenarTabla(this,4)" id="numero">Dni</a></th>
+                        <th><a href="#" onclick="ordenarTabla(this,5)" id="texto">Pais origen</a></th>
                         <th>Tipo</th>
                     </tr>
                 </table>
@@ -456,15 +456,15 @@
 // 01,"paisOrigen":"Paraguay"},{"id":5,"apellido":"Barrichello","nombre":"Rubens","fechaNacimiento":19720523,"paisOrig
 // en":"Brazil"},{"id":666,"apellido":"Hkkinen","nombre":"Mika","fechaNacimiento":19680928,"paisOrigen":"Finlandia"}]'
 
-var ej1 = new Ciudadano("Serrano","Horacio",19840103,45876942);
+var ej1 = new Ciudadano("Horacio","Serrano",19840103,45876942);
 agregarDatosEnTabla(ej1);
-var ej2= new Ciudadano("Casas","Julian",19990723,98536214);
+var ej2= new Ciudadano("Julian","Casas",19990723,98536214);
 agregarDatosEnTabla(ej2);
-var ej3 = new Ciudadano("Galeano","Julieta",20081103,45876942);
+var ej3 = new Ciudadano("Julieta","Galeano",20081103,45876942);
 agregarDatosEnTabla(ej3);
-var ej4 = new Extranjero("Serrano","Horacio",19681201,"Paraguay");
+var ej4 = new Extranjero("Horacio","Serrano",19681201,"Paraguay");
 agregarDatosEnTabla(ej4);
-var ej5 = new Extranjero("Barrichello","Rubens",19720523,"Brazil");
+var ej5 = new Extranjero("Rubens","Barrichello",19720523,"Brazil");
 agregarDatosEnTabla(ej5);
 
 
@@ -831,7 +831,11 @@ const personasTotal = new Array();
                     for(let k = 0; k < fila.cells.length; k++)
                     {
                         let celda = fila.cells[k];
-                        celda.style.display = "none";
+                        if(!celda.hidden){
+
+                            celda.style.display = "none";
+                            fila.hidden = true;
+                        }
                     }
                 }
                 else
@@ -840,7 +844,12 @@ const personasTotal = new Array();
                     {
                         let celda = fila.cells[k];
 
-                        celda.style.display = "table-cell";
+                        if(!celda.hidden)
+                        {
+                            celda.style.display = "table-cell";
+                            fila.hidden = false;
+                        }
+
                     }
                 }
             }
@@ -848,44 +857,34 @@ const personasTotal = new Array();
     }
 
     
-    function ordenarTabla(a)
+    function ordenarTabla(a, valor)
     {
-        // var valor = a.id;
+        var tipo = a.id;
 
-        // var tabla = ElementoId("tabla");
+        var tabla = ElementoId("tabla");
 
-        // var filas = tabla.rows;
+        var filas = Array.from(tabla.rows).slice(1);
 
-        // var filasAOrdenar = new Array();
+        //console.log(filas);
 
-        // for(let i = 0; i < filas.length; i++)
-        // {
-        //     let fila = filas[i];
-        //     if( i !== 0)
-        //     {
-        //         filasAOrdenar.push(fila.childNodes);
-        //         tabla.dele
-        //     }
-        // }
+        filas.sort((a,b) => {
 
-        //eliminarFilasTabla();
+            let aTexto = a.cells[valor].innerText;
+            let bTexto = b.cells[valor].innerText;
 
-        // for(let k = 0; k < filasAOrdenar.length - 1; k++)
-        // {
-        //     for( let j = 1; j < filasAOrdenar.length; j++)
-        //     {
-        //         let filaAnterior = filasAOrdenar[k];
-
-        //         if(filasAOrdenar[k][valor].innerHTML > filasAOrdenar[j][valor].innerHTML)
-        //         {
-        //             filasAOrdenar[k] = filasAOrdenar[j];
-        //             filasAOrdenar[j] = filaAnterior;
-        //         }
-        //     }
-
-        // }
-
-
+            switch (tipo) {
+                case 'numero':
+                    return parseFloat(aTexto) - parseFloat(bTexto);
+                case 'texto':
+                    return aTexto.localeCompare(bTexto);
+                case 'fecha':
+                    return parseInt(aTexto.toString().substring(0, 4)) - parseInt(bTexto.toString().substring(0, 4))
+                default:
+                    return 0;
+            }
+        });
+        
+        filas.forEach(fila => tabla.appendChild(fila));
 
     }
 
@@ -909,8 +908,13 @@ const personasTotal = new Array();
                     for(let k = 0; k < fila.cells.length; k++)
                     {
                         let celda = fila.cells[k];
+                        if(!celda.hidden)
+                        {
 
-                        celda.style.display = "none";
+                            celda.style.display = "none";
+                            fila.hidden = true;
+                        }
+
                     }
                 }
                 else
@@ -918,8 +922,12 @@ const personasTotal = new Array();
                     for(let k = 0; k < fila.cells.length; k++)
                     {
                         let celda = fila.cells[k];
+                        if(!celda.hidden){
 
-                        celda.style.display = "table-cell";
+                            celda.style.display = "table-cell";
+                            fila.hidden = false;
+                        }
+
                     }
                 }
             }
@@ -940,8 +948,11 @@ const personasTotal = new Array();
                 for(let k = 0; k < fila.cells.length; k++)
                 {
                     let celda = fila.cells[k];
-
-                    celda.style.display = "table-cell";
+                    if(!celda.hidden)
+                    {
+                        celda.style.display = "table-cell";
+                        fila.hidden = false;
+                    }
                 }
             }
         }
@@ -971,6 +982,9 @@ const personasTotal = new Array();
             alert("Primero tiene que agregar empleados o clientes para poder filtrar");
         }
 
+        let inputPromedio = ElementoId("promedioInput");
+        inputPromedio.value = "";
+
 
     }
 
@@ -983,22 +997,23 @@ const personasTotal = new Array();
         //Recorro las filas y el checkbox va a venir con el valor(value) de la celda que no se va a mostrar
         for(let i = 0;  i < filas.length; i++)
         {
+
             var fila = filas[i];
-            if(!ElementoId(checkbox.id).checked)
-            {
 
-                let celda = fila.cells[checkbox.value]; //valores de los inputs y las posiciones se relacionan
-                
-                celda.style.display = "none";
-
-            }
-            else if(ElementoId(checkbox.id).checked)
-            {
-
-                let celda = fila.cells[checkbox.value];
-
-                celda.style.display = "table-cell";
-            }
+                if(!ElementoId(checkbox.id).checked)
+                {
+                    let celda = fila.cells[checkbox.value]; //valores de los inputs y las posiciones se relacionan
+                    
+                    celda.style.display = "none";
+                    celda.hidden = true;
+                }
+                else if(ElementoId(checkbox.id).checked)
+                {
+                    let celda = fila.cells[checkbox.value];
+                    celda.style.display = "table-cell";
+                    celda.hidden = false;
+                }
+            
         }
         
 
@@ -1019,14 +1034,20 @@ const personasTotal = new Array();
 
             for(let i = 0; i <celdas.length; i++)
             {
-
-                valoresCeldas.push(celdas[i].innerHTML);
+                if(i == 0)
+                {
+                    ElementoId("id").value = celdas[i].innerHTML;
+                }
+                else
+                {
+                    valoresCeldas.push(celdas[i].innerHTML);
+                }
                 
             }
 
             var inputs = ["nombre","apellido","fechaDeNacimiento","inputDni","inputPaisOrigen"];
 
-            ElementoId("id").value = valoresCeldas[0];
+            //ElementoId("id").value = valoresCeldas[0];
 
             for(let k = 0; k < inputs.length; k++)
             {
@@ -1043,7 +1064,7 @@ const personasTotal = new Array();
 
             if(valoresCeldas[5] == "Ciudadano")
             {
-                document.getElementById("ciuadadano").checked = true;
+                document.getElementById("ciudadano").checked = true;
             }
             else
             {
@@ -1063,6 +1084,8 @@ const personasTotal = new Array();
             ElementoId("div-id").style.display = "flex";
 
 
+
+
             Appear(valoresCeldas[5].toLowerCase());
 
         }
@@ -1075,7 +1098,7 @@ const personasTotal = new Array();
     {
         var tabla = ElementoId("tabla");
 
-        var inputs = ["nombre","apellido","fechaDeNacimiento","inputDni","inputPaisOrigen",];
+        var inputs = ["id","nombre","apellido","fechaDeNacimiento","inputDni","inputPaisOrigen",];
 
         var filas = tabla.rows;
 
@@ -1097,16 +1120,15 @@ const personasTotal = new Array();
                 var fila = filas[i];
                 if(i !== 0)
                 {
-                    for(let k = 0; k < fila.cells.length; k++)
-                    {
-                        if(fila.cells[0].innerHTML == ElementoId(inputs[0]).value)
+                    if(fila.cells[0].innerHTML == ElementoId("id").value)
+                    {          
+                        for(let k = 0; k < fila.cells.length; k++)
                         {
                             let celda = fila.cells[k];
-
                             //Distinto a 6 porque la ultima celda es para indicar el tipo 
                             if(k !== 6)
                             {
-                                    celda.innerHTML = (ElementoId(inputs[k]).value) ? ElementoId(inputs[k]).value : "--";
+                                celda.innerHTML = (ElementoId(inputs[k]).value) ? ElementoId(inputs[k]).value : "--";
                             }
                             else
                             {
@@ -1140,7 +1162,7 @@ const inputPaisOrigen = ElementoId("inputPaisOrigen");
     {
 
         let extranjeroRadio = ElementoId("extranjero");
-        let ciudadanoRadio = ElementoId("ciuadadano");
+        let ciudadanoRadio = ElementoId("ciudadano");
 
         //Eventos de mis radiobuttons
         ciudadanoRadio.addEventListener("change",function(){
@@ -1168,18 +1190,18 @@ const inputPaisOrigen = ElementoId("inputPaisOrigen");
         if(tipo == "ciudadano")
         {
             ElementoId("labelDni").style.display = "inline";
+            ElementoId("labelDni").textContent = "Dni";
             ElementoId("inputDni").style.display = "inline";
 
             ElementoId("labelPaisOrigen").style.display = "none";
             ElementoId("inputPaisOrigen").style.display = "none";
 
             ElementoId("inputPaisOrigen").value = "";
-
-
         }
         else
         {
             ElementoId("labelPaisOrigen").style.display = "inline";
+            ElementoId("labelPaisOrigen").textContent = "Pais origen";
             ElementoId("inputPaisOrigen").style.display = "inline";
 
             ElementoId("labelDni").style.display = "none";
@@ -1197,6 +1219,8 @@ personasTotal.push(ej5);
 
     function calcularEdadPromedio()
     {
+        var opcion = ElementoId("opciones").value;
+
 
         try
         {
@@ -1204,7 +1228,24 @@ personasTotal.push(ej5);
 
             personasTotal.forEach(personas => {
 
-                edades.push(personas.fechaDeNacimiento);
+                switch(opcion)
+                {
+                    case '2':
+                        if(personas instanceof Ciudadano)
+                        {
+                            edades.push(personas.fechaDeNacimiento);
+                        }
+                        break;
+                    case '3':
+                        if(personas instanceof Extranjero)
+                        {
+                            edades.push(personas.fechaDeNacimiento);
+                        }
+                        break;
+                    default:
+                        edades.push(personas.fechaDeNacimiento);
+                        break;
+                }
             });
 
             let años = edades.map(function(edad) {
